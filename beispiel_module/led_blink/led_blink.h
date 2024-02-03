@@ -1,6 +1,5 @@
 class LEDBlink {
-public:
-  
+public:  
   void setup(int led_pin, unsigned long blink_interval) {
     pin = led_pin;
     pinMode(pin, OUTPUT);
