@@ -23,26 +23,24 @@ Arduino program welches mehrere Module kombiniert und individuell getested werde
 
 ### Hauptprogram [ModularesSystemPrototyp.ino](ModularesSystemPrototyp.ino)
 ```c++
-#include "module/led_blink/led_blink.h"
-#include "module/serial_input/serial_input.h"
+#include "beispiel_module/led_blink/led_blink.h"
+#include "beispiel_module/serial_input/serial_input.h"
 
 LEDBlink led_blink;
-SerialInput serial_input;
 
 bool schnelles_blinken = false;
 
 void setup() {
+  serial_input_setup();
   led_blink.setup(LED_BUILTIN, 500);
-  serial_input.setup('t');
 }
 
 void loop() {
-  serial_input.update();
-
-  if (serial_input.taste_gedrueckt)
+  if (serial_input_taste_gedrueckt('t')) {
     schnelles_blinken = !schnelles_blinken;
+  }
 
-  led_blink.set_interval(schnelles_blinken ? 100 : 500);
+  led_blink.interval_ms = schnelles_blinken ? 100 : 500;
   led_blink.update();
 }
 ```
@@ -66,17 +64,60 @@ void loop() {
 ```c++
 #include "serial_input.h"
 
-SerialInput serial_input;
-
 void setup() {
-  serial_input.setup('t');
+  serial_input_setup();
 }
 
 void loop() {
-  serial_input.update();
-
-  if (serial_input.taste_gedrueckt) {
+  if (serial_input_taste_gedrueckt('t')) {
     Serial.println("taste wurde gedrückt");
   }
+}
+```
+
+### Module implementieren
+#### [led_blink.h](beispiel_module/led_blink/led_blink.h):
+```c++
+#pragma once
+
+struct LEDBlink {
+  int pin = LED_BUILTIN;
+  bool state = false;
+  unsigned long interval_ms = 250;
+  unsigned long prev_millis = 0;
+
+  void setup(int led_pin, unsigned long blink_interval);
+  void update();
+};
+
+void LEDBlink::setup(int led_pin, unsigned long blink_interval_ms) {
+  pin = led_pin;
+  pinMode(pin, OUTPUT);
+  interval_ms = blink_interval_ms;
+}
+
+void LEDBlink::update() {
+    unsigned long current_millis = millis();
+    if (current_millis - prev_millis >= interval_ms) {
+      state = !state;
+      digitalWrite(pin, state);
+      prev_millis = current_millis;
+    }
+  }
+```
+
+#### [serial_input.h](beispiel_module/serial_input/serial_input.h)
+```c++
+#pragma once
+
+void serial_input_setup() {
+  Serial.begin(9600);
+}
+
+bool serial_input_taste_gedrueckt(char taste) {
+  if (Serial.available()) {
+    return Serial.read() == taste;
+  }
+  return false;
 }
 ```

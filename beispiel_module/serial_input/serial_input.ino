@@ -1,15 +1,11 @@
 #include "serial_input.h"
 
-SerialInput serial_input;
-
 void setup() {
-  serial_input.setup('t');
+  serial_input_setup();
 }
 
 void loop() {
-  serial_input.update();
-
-  if (serial_input.taste_gedrueckt) {
+  if (serial_input_taste_gedrueckt('t')) {
     Serial.println("taste wurde gedrückt");
   }
 }

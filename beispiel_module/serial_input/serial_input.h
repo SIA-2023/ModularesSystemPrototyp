@@ -1,20 +1,12 @@
-class SerialInput {
-public:
-  void setup(char input_taste) {
-    taste = input_taste;
-    Serial.begin(9600);
+#pragma once
+
+void serial_input_setup() {
+  Serial.begin(9600);
+}
+
+bool serial_input_taste_gedrueckt(char taste) {
+  if (Serial.available()) {
+    return Serial.read() == taste;
   }
-
-  void update() {
-    taste_gedrueckt = false;
-
-    if (Serial.available()) {
-      switch (Serial.read()) {
-        case 't': taste_gedrueckt = true; break;
-      }
-    }
-  }
-
-  char taste = ' ';
-  bool taste_gedrueckt = false;
-};
+  return false;
+}
